@@ -277,7 +277,8 @@ Los tests de `IsEmpty` ya están activos en `StringTest.c`. Corré `make test` y
 
 **P1** — `IsEmpty` podría haberse escrito también como `return s[0] == '\0'`. ¿Son equivalentes? ¿Por qué?
 
-> R:
+> R: Si son equivalentes. En C `s[0]` es sintácticamente equivalente a `*(s + 0)`, osea desreferenciar el puntero `s` en su primera posición. Como `*(s + 0)` es lo mismo que `*s`, las dos expresiones acceden al primer carácter de la cadena. s[0] == *(s + 0) == *s.
+
 
 ---
 
@@ -328,14 +329,14 @@ make test
 
 **P2** — ¿Qué hace `s + 1`? ¿Por qué avanza al siguiente carácter y no al siguiente byte?
 
-> R:
+> R: s + 1 avanza el puntero a la siguiente posición de tipo char. Como la aritmética de punteros en C tiene en cuenta el tamaño del tipo apuntado avanza sizeof(char) bytes. Como sizeof(char) siempre es 1 avanza un byte que corresponde al siguiente carácter del string.
 
 **P3** — Si llamaras a `GetLength(NULL)`, ¿qué pasaría? ¿Por qué las precondiciones del contrato dicen `s != NULL`?
 
-> R:
+> R: Sería un comportamiento indefinido porque IsEmpty(NULL) intenta desreferenciar un puntero nulo al hacer *s. La precondición s != NULL asegura que el puntero sea válido y apunte a alguna cadena terminada en '\0'.
 
 ```
-GETLENGTH_PASA=
+GETLENGTH_PASA=SI
 ```
 _(escribí SI cuando todos los tests de GetLength pasen)_
 
@@ -367,7 +368,8 @@ El `while` termina cuando alguna de las dos cadenas llega a `'\0'`. Después dev
 
 **P4** — ¿Qué dos casos están mal cubiertos por `return 1`? Describí un ejemplo para cada uno.
 
-> R:
+> R: Los dos casos que están mal cubiertos son: La primera cadena es más larga que la segunda. Ejemplo: AreEqual("abc", "ab") devuelve 1, cuando debería devolver 0. 
+> La segunda cadena es más larga que la primera. Ejemplo: AreEqual("ab", "abc") devuelve 1, cuando debería devolver 0.
 
 #### Corrección
 
@@ -384,7 +386,7 @@ make test
 ```
 
 ```
-AREEQUAL_PASA=
+AREEQUAL_PASA=SI
 ```
 _(escribí SI cuando todos los tests de AreEqual pasen)_
 
@@ -414,7 +416,7 @@ int AreDecimalDigits(const char *s) {
 
 **P5** — ¿Por qué la cadena vacía no debería considerarse un conjunto de dígitos decimales? Pensalo desde la especificación matemática.
 
-> R:
+> R: La cadena vacía no debería considerarse un conjunto de dígitos decimales porque no contiene ningún dígito. AreDecimalDigits debe devolver 1 únicamente si la cadena contiene uno o más dígitos del '0' al '9', es decir que para la cadena vacía debe devolver 0.
 
 #### Corrección
 
@@ -425,7 +427,7 @@ make test
 ```
 
 ```
-AREDECIMALDIGITS_PASA=
+AREDECIMALDIGITS_PASA=SI
 ```
 _(escribí SI cuando todos los tests de AreDecimalDigits pasen)_
 
@@ -452,7 +454,7 @@ make test
 ```
 
 ```
-CONTAINS_PASA=
+CONTAINS_PASA=SI
 ```
 _(escribí SI cuando todos los tests de Contains pasen)_
 
@@ -467,7 +469,7 @@ Antes de implementar, discutí con tu equipo:
 
 **P6** — Conclusión de la discusión:
 
-> R:
+> R: Tiene sentido que ToInteger esté en un módulo separado llamado Conversion, porque su responsabilidad es convertir una cadena de caracteres en un número entero y no manipular cadenas en sí.
 
 ---
 
@@ -494,7 +496,7 @@ int ToInteger(const char *s) {
 
 **P7** — El loop acumula correctamente el valor en `resultado`. ¿Qué está mal en el `return`?
 
-> R:
+> R: El error está en que la función devuelve signo en lugar de resultado * signo. La variable signo solamente vale 1 o -1, pero resultado contiene el número que se calculó en el bucle.
 
 #### Corrección
 
@@ -506,10 +508,10 @@ make test
 
 **P8** — La expresión `*s - '0'` convierte un carácter dígito al entero correspondiente. ¿Por qué funciona? ¿Qué devuelve `'3' - '0'`?
 
-> R:
+> R: Funciona porque los caracteres que representan los dígitos decimales tienen valores consecutivos en el código de caracteres. Al restar el valor de '0' al de otro dígito se obtiene su valor numérico.
 
 ```
-TOINTEGER_PASA=
+TOINTEGER_PASA=SI
 ```
 _(escribí SI cuando todos los tests de ToInteger pasen)_
 
@@ -562,7 +564,7 @@ foo
 
 **P9** — ¿Por qué `(void)argc` suprime un warning? ¿Cuándo sería necesario usar `argc`?
 
-> R:
+> R: (void)argc evita que el compilador muestre un warning porque el parámetro no se usa. Sería necesario usar argc si quisiéramos verificar cuántos argumentos ingresó el usuario.
 
 ---
 
@@ -589,7 +591,7 @@ Salida esperada:
 ```
 
 ```
-LONGITUDES_PASA=
+LONGITUDES_PASA=SI
 ```
 _(SI o NO)_
 
@@ -616,7 +618,7 @@ make mayorlongitud
 ```
 
 ```
-MAYORLONGITUD_PASA=
+MAYORLONGITUD_PASA=SI
 ```
 _(SI o NO)_
 
@@ -635,7 +637,7 @@ make todosiguales
 ```
 
 ```
-TODOSIGUALES_PASA=
+TODOSIGUALES_PASA=SI
 ```
 _(SI o NO)_
 
@@ -652,7 +654,7 @@ make suma
 ```
 
 ```
-SUMA_PASA=
+SUMA_PASA=SI
 ```
 _(SI o NO)_
 
@@ -662,15 +664,15 @@ _(SI o NO)_
 
 **P10** — `GetLength` es recursiva pero en C una llamada recursiva consume un stack frame. Si llamaras `GetLength` con un string de 1.000.000 de caracteres, ¿qué pasaría? ¿Cómo lo resolverías?
 
-> R:
+> R: Cada llamada recursiva consume memoria del stack y podría provocar un desbordamiento. Lo resolvería usando un bucle iterativo en lugar de recursión.
 
 **P11** — En la Parte III, todos los programas usan `char **arg` para iterar en vez de un índice entero. ¿Qué ventaja tiene este estilo? ¿Cuándo sería preferible usar el índice?
 
-> R:
+> R: Usar char **arg permite recorrer directamente los argumentos con punteros. Conviene usar índices cuando necesitamos acceder a posiciones específicas o conocer el número de elementos.
 
 **P12** — En C, `"hola"` es un literal de tipo `const char *`. Si intentaras modificar un carácter con `s[0] = 'H'`, el comportamiento es indefinido. ¿Por qué? ¿En qué parte de la memoria viven los literales?
 
-> R:
+> R: Los literales son constantes y no deben modificars y hacerlo produce comportamiento indefinido. Generalmente se almacenan en una sección de memoria de solo lectura.
 
 ---
 
